@@ -1,0 +1,98 @@
+{
+  "description": "Enterprise Virtual Lab Topology with Ingress DMZ, Business Application Tier, and Critical Database",
+  "scope": "10.0.0.0/16",
+  "assets": [
+    {
+      "hostname": "firewall-edge-01.corp",
+      "ip_address": "10.0.0.1",
+      "mac_address": "00:50:56:A1:00:01",
+      "os_name": "pfSense FreeBSD",
+      "asset_type": "firewall",
+      "criticality": "HIGH",
+      "environment": "external",
+      "subnet": "10.0.0.0/24",
+      "is_perimeter": true,
+      "business_impact_score": 80.0,
+      "services": [
+        {"port": 443, "protocol": "tcp", "service_name": "https", "product": "WebGUI", "version": "2.6.0"}
+      ]
+    },
+    {
+      "hostname": "dmz-api-gateway.corp",
+      "ip_address": "10.0.1.10",
+      "mac_address": "00:50:56:A1:01:10",
+      "os_name": "Ubuntu Linux 22.04",
+      "asset_type": "server",
+      "criticality": "HIGH",
+      "environment": "dmz",
+      "subnet": "10.0.1.0/24",
+      "is_perimeter": true,
+      "business_impact_score": 75.0,
+      "services": [
+        {"port": 80, "protocol": "tcp", "service_name": "http", "product": "nginx", "version": "1.18.0"},
+        {"port": 443, "protocol": "tcp", "service_name": "https", "product": "nginx", "version": "1.18.0"}
+      ],
+      "findings": [
+        {
+          "cve_id": "CVE-2021-23017",
+          "title": "[SIMULATED LAB] NGINX DNS Resolver Off-by-one Heap Overflow",
+          "cvss_v3_score": 7.7,
+          "cvss_v3_severity": "HIGH",
+          "port": 443,
+          "reachability_status": "internet_reachable",
+          "raw_score": 77.0,
+          "contextual_risk_score": 81.2,
+          "remediation_advice": "Upgrade NGINX to version 1.21.0 or 1.20.1."
+        }
+      ]
+    },
+    {
+      "hostname": "core-db-cluster.corp",
+      "ip_address": "10.0.2.50",
+      "mac_address": "00:50:56:A1:02:50",
+      "os_name": "Debian Linux 11",
+      "asset_type": "database",
+      "criticality": "CRITICAL",
+      "environment": "internal",
+      "subnet": "10.0.2.0/24",
+      "is_perimeter": false,
+      "business_impact_score": 98.0,
+      "services": [
+        {"port": 5432, "protocol": "tcp", "service_name": "postgresql", "product": "PostgreSQL", "version": "13.2"}
+      ],
+      "findings": [
+        {
+          "cve_id": "CVE-2021-32027",
+          "title": "[SIMULATED LAB] PostgreSQL Buffer Overflow in array_subscript_handler",
+          "cvss_v3_score": 8.8,
+          "cvss_v3_severity": "HIGH",
+          "port": 5432,
+          "reachability_status": "subnet_reachable",
+          "raw_score": 88.0,
+          "contextual_risk_score": 84.5,
+          "remediation_advice": "Upgrade PostgreSQL to version 13.3 or apply vendor patch."
+        }
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "source_ip": "10.0.0.1",
+      "target_ip": "10.0.1.10",
+      "relationship_type": "routes_to",
+      "port": 443,
+      "confidence": "HIGH",
+      "weight": 1.0,
+      "description": "Perimeter firewall routes external web requests to DMZ API Gateway"
+    },
+    {
+      "source_ip": "10.0.1.10",
+      "target_ip": "10.0.2.50",
+      "relationship_type": "can_connect",
+      "port": 5432,
+      "confidence": "HIGH",
+      "weight": 1.2,
+      "description": "DMZ Gateway connects to PostgreSQL core database"
+    }
+  ]
+}

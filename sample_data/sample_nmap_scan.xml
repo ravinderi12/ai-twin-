@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE nmaprun>
+<nmaprun scanner="nmap" args="nmap -sV -sC -F 192.168.10.0/24" start="1710000000" version="7.94">
+<host starttime="1710000001" endtime="1710000005">
+  <status state="up" reason="arp-response"/>
+  <address addr="192.168.10.15" addrtype="ipv4"/>
+  <address addr="00:0C:29:4F:8E:11" addrtype="mac"/>
+  <hostnames>
+    <hostname name="web-frontend-01.lab.local" type="user"/>
+  </hostnames>
+  <ports>
+    <port protocol="tcp" portid="80">
+      <state state="open" reason="syn-ack"/>
+      <service name="http" product="Apache httpd" version="2.4.49" method="probed" conf="10"/>
+      <script id="http-vuln-cve2021-41773" output="Vulnerable: Path traversal and RCE in Apache 2.4.49 CVE-2021-41773"/>
+    </port>
+    <port protocol="tcp" portid="22">
+      <state state="open" reason="syn-ack"/>
+      <service name="ssh" product="OpenSSH" version="8.2p1" method="probed" conf="10"/>
+    </port>
+  </ports>
+  <os>
+    <osmatch name="Linux 5.4 (Ubuntu 20.04)" accuracy="98"/>
+  </os>
+</host>
+<host starttime="1710000006" endtime="1710000010">
+  <status state="up" reason="arp-response"/>
+  <address addr="192.168.10.25" addrtype="ipv4"/>
+  <address addr="00:0C:29:4F:8E:22" addrtype="mac"/>
+  <hostnames>
+    <hostname name="db-internal-01.lab.local" type="user"/>
+  </hostnames>
+  <ports>
+    <port protocol="tcp" portid="3306">
+      <state state="open" reason="syn-ack"/>
+      <service name="mysql" product="MySQL Server" version="5.7.30" method="probed" conf="10"/>
+      <script id="mysql-vuln" output="Potential vulnerability CVE-2020-14812 in MySQL 5.7.30 optimizer"/>
+    </port>
+  </ports>
+  <os>
+    <osmatch name="Debian 11" accuracy="95"/>
+  </os>
+</host>
+</nmaprun>

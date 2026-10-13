@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE test [
+  <!ENTITY xxe SYSTEM "file:///etc/passwd">
+]>
+<nmaprun>
+  <host>
+    <address addr="&xxe;" addrtype="ipv4"/>
+  </host>
+</nmaprun>
