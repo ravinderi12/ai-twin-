@@ -9,6 +9,7 @@ import { Asset } from '../types';
 export const DigitalTwinMap: React.FC = () => {
   const [graphData, setGraphData] = useState<any>(null);
   const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
   const [selectedNodeData, setSelectedNodeData] = useState<any>(null);
   const [assetDetail, setAssetDetail] = useState<Asset | null>(null);
   const [loadingDetail, setLoadingDetail] = useState<boolean>(false);
@@ -17,10 +18,13 @@ export const DigitalTwinMap: React.FC = () => {
   const loadGraph = async () => {
     try {
       setLoading(true);
+      setError(null);
       const data = await getCytoscapeGraph();
       setGraphData(data);
-    } catch (err) {
+    } catch (err: any) {
       console.error("Failed to load graph data", err);
+      const msg = err?.response?.data?.detail || err?.message || "Failed to connect to backend server on port 8000";
+      setError(msg);
     } finally {
       setLoading(false);
     }
@@ -91,6 +95,23 @@ export const DigitalTwinMap: React.FC = () => {
               <div className="flex flex-col items-center space-y-2">
                 <RefreshCw className="w-8 h-8 text-cyan-400 animate-spin" />
                 <span className="text-xs text-slate-400 font-mono">Building Mathematical Adjacency Graph...</span>
+              </div>
+            </div>
+          ) : error && !graphData ? (
+            <div className="w-full h-full bg-[#070b14] rounded-xl border border-soc-border flex items-center justify-center p-6">
+              <div className="flex flex-col items-center text-center space-y-3 max-w-md">
+                <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-full text-red-400">
+                  <Shield className="w-8 h-8" />
+                </div>
+                <h3 className="text-sm font-bold text-white">Digital Twin Graph Unavailable</h3>
+                <p className="text-xs text-slate-400 font-mono">{error}</p>
+                <button
+                  onClick={loadGraph}
+                  className="mt-2 px-4 py-2 bg-cyan-600 hover:bg-cyan-500 active:scale-95 text-white text-xs font-semibold rounded-lg flex items-center space-x-2 transition"
+                >
+                  <RefreshCw className="w-3.5 h-3.5" />
+                  <span>Retry Connection</span>
+                </button>
               </div>
             </div>
           ) : (

@@ -12,6 +12,22 @@ const api = axios.create({
   }
 });
 
+// Health & System Status
+export interface HealthStatus {
+  status: string;
+  app_name: string;
+  version: string;
+  database: string;
+  nmap_cli_available: boolean;
+  live_scanning_enabled: boolean;
+  allowed_scan_ranges: string[];
+}
+
+export const getHealth = async (): Promise<HealthStatus> => {
+  const res = await api.get<HealthStatus>('/health');
+  return res.data;
+};
+
 // Dashboard
 export const getDashboardMetrics = async (): Promise<DashboardMetrics> => {
   const res = await api.get('/dashboard/metrics');

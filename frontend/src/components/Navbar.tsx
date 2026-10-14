@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { Shield, Activity, RefreshCw, FileText, CheckCircle2, AlertCircle } from 'lucide-react';
-import { loadDemoTopology, getPdfExportUrl } from '../services/api';
+import React, { useState, useEffect } from 'react';
+import { Shield, Activity, RefreshCw, FileText, CheckCircle2, AlertCircle, AlertTriangle } from 'lucide-react';
+import { loadDemoTopology, getPdfExportUrl, getHealth, HealthStatus } from '../services/api';
 
 interface NavbarProps {
   onDataRefresh?: () => void;
@@ -9,6 +9,25 @@ interface NavbarProps {
 export const Navbar: React.FC<NavbarProps> = ({ onDataRefresh }) => {
   const [reloading, setReloading] = useState(false);
   const [notification, setNotification] = useState<string | null>(null);
+  const [backendOnline, setBackendOnline] = useState<boolean | null>(null);
+  const [healthData, setHealthData] = useState<HealthStatus | null>(null);
+
+  const checkHealth = async () => {
+    try {
+      const data = await getHealth();
+      setBackendOnline(true);
+      setHealthData(data);
+    } catch {
+      setBackendOnline(false);
+      setHealthData(null);
+    }
+  };
+
+  useEffect(() => {
+    checkHealth();
+    const interval = setInterval(checkHealth, 10000);
+    return () => clearInterval(interval);
+  }, []);
 
   const handleReloadDemo = async () => {
     try {
@@ -59,9 +78,37 @@ export const Navbar: React.FC<NavbarProps> = ({ onDataRefresh }) => {
       <div className="flex items-center space-x-4">
 
         {/* Telemetry Status */}
-        <div className="flex items-center space-x-2 px-3 py-1.5 rounded-md bg-slate-800/60 border border-slate-700/60 text-xs">
-          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
-          <span className="text-slate-300 font-medium">SOC Engine Active</span>
+        <div
+          onClick={checkHealth}
+          title={
+            backendOnline
+              ? `FastAPI Backend Online (v${healthData?.version || '1.0'}) • DB ${healthData?.database || 'connected'} • Click to check status`
+              : 'Backend unreachable at 127.0.0.1:8000. Start it with: python -m uvicorn backend.app.main:app --port 8000. Click to retry.'
+          }
+          className={`cursor-pointer flex items-center space-x-2 px-3 py-1.5 rounded-md border text-xs transition select-none ${
+            backendOnline
+              ? 'bg-slate-800/60 border-slate-700/60 text-slate-300 hover:border-slate-500'
+              : backendOnline === false
+              ? 'bg-red-950/60 border-red-500/60 text-red-300 hover:bg-red-900/60'
+              : 'bg-slate-800/40 border-slate-700/40 text-slate-400'
+          }`}
+        >
+          {backendOnline ? (
+            <>
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+              <span className="font-medium">SOC Engine Active</span>
+            </>
+          ) : backendOnline === false ? (
+            <>
+              <AlertCircle className="w-3.5 h-3.5 text-red-400 animate-pulse" />
+              <span className="font-medium">Backend Offline (Port 8000)</span>
+            </>
+          ) : (
+            <>
+              <RefreshCw className="w-3 h-3 text-slate-400 animate-spin" />
+              <span className="font-medium">Connecting...</span>
+            </>
+          )}
         </div>
 
         {/* Load / Reset Demo Data Button */}

@@ -15,14 +15,18 @@ import { DashboardMetrics } from '../types';
 export const OverviewDashboard: React.FC = () => {
   const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const fetchMetrics = async () => {
     try {
       setLoading(true);
+      setError(null);
       const data = await getDashboardMetrics();
       setMetrics(data);
-    } catch (err) {
+    } catch (err: any) {
       console.error("Failed to load metrics", err);
+      const msg = err?.response?.data?.detail || err?.message || "Backend offline at 127.0.0.1:8000";
+      setError(msg);
     } finally {
       setLoading(false);
     }
@@ -62,6 +66,25 @@ export const OverviewDashboard: React.FC = () => {
 
   return (
     <div className="p-6 space-y-6 max-w-7xl mx-auto">
+      {/* Backend Offline Alert */}
+      {error && (
+        <div className="bg-red-950/60 border border-red-500/50 rounded-xl p-4 flex items-center justify-between text-xs text-red-200 shadow-md">
+          <div className="flex items-center space-x-3">
+            <AlertTriangle className="w-5 h-5 text-red-400 shrink-0" />
+            <div>
+              <p className="font-semibold text-white">Backend Telemetry Offline</p>
+              <p className="text-red-300 font-mono text-[11px] mt-0.5">{error}</p>
+            </div>
+          </div>
+          <button
+            onClick={fetchMetrics}
+            className="px-3 py-1.5 bg-red-600 hover:bg-red-500 text-white rounded-lg font-medium transition whitespace-nowrap active:scale-95"
+          >
+            Retry Connection
+          </button>
+        </div>
+      )}
+
       {/* Top Banner / Choke Point Highlight */}
       {m.choke_points && m.choke_points.length > 0 && (
         <div className="bg-gradient-to-r from-red-950/40 via-amber-950/30 to-slate-900 border border-red-500/30 rounded-xl p-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-sm">
